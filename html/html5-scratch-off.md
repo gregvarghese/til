@@ -1,0 +1,99 @@
+Found on:
+http://thenewcode.com/1120/Scratch-Off-Reveal-with-HTML5-Canvas?ref=webdesignernews.com
+https://codepen.io/dudleystorey/pen/yJQxLX
+
+
+## HTML
+
+<figure id="bridgeContainer">
+<canvas id="bridge" width="750" height="465"></canvas>
+  <figcaption>Downtown Calgary in 2013 and 1943; mouse down or touch on photo to reveal</figcaption>
+</figure>
+
+## CSS
+
+body { margin: 0; }
+
+#bridge {
+	display: block;
+	margin: 0 auto;
+  background-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/4273/calgary-bridge-1943.jpg');
+	background-image: -webkit-image-set(url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/4273/calgary-bridge-1943.jpg') 1x, url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/4273/calgary-bridge-1943-2x.jpg') 2x );
+	background-size: cover;
+	width: 100%;
+	max-width: 750px;
+	height: auto;
+  cursor:  crosshair;
+  cursor: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/4273/circular-cursor.png) 53 53, crosshair;
+}
+#bridgeContainer { 
+  text-align: center;
+  font-family: Avenir, sans-serif;
+}
+#bridgeContainer figcaption {   
+  margin-top: 2rem; 
+}
+
+## JS
+
+var bridge = document.getElementById("bridge"),
+bridgeCanvas = bridge.getContext('2d'),
+brushRadius = (bridge.width / 100) * 5,
+img = new Image();
+
+if (brushRadius < 50) { brushRadius = 50 }
+
+img.onload = function(){  
+	bridgeCanvas.drawImage(img, 0, 0, bridge.width, bridge.height);
+}
+img.loc = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/4273/';
+img.filename = 'calgary-bridge-2013.jpg';
+if (window.devicePixelRatio >= 2) {
+	var nameParts = img.filename.split('.');
+	img.src = img.loc + nameParts[0]+"-2x"+"."+nameParts[1];
+} else {
+	img.src = img.loc + img.filename;
+}
+
+function detectLeftButton(event) {
+    if ('buttons' in event) {
+        return event.buttons === 1;
+    } else if ('which' in event) {
+        return event.which === 1;
+    } else {
+        return event.button === 1;
+    }
+}
+
+function getBrushPos(xRef, yRef) {
+	var bridgeRect = bridge.getBoundingClientRect();
+    return {
+	  x: Math.floor((xRef-bridgeRect.left)/(bridgeRect.right-bridgeRect.left)*bridge.width),
+	  y: Math.floor((yRef-bridgeRect.top)/(bridgeRect.bottom-bridgeRect.top)*bridge.height)
+    };
+}
+      
+function drawDot(mouseX,mouseY){
+	bridgeCanvas.beginPath();
+    bridgeCanvas.arc(mouseX, mouseY, brushRadius, 0, 2*Math.PI, true);
+    bridgeCanvas.fillStyle = '#000';
+    bridgeCanvas.globalCompositeOperation = "destination-out";
+    bridgeCanvas.fill();
+}
+
+bridge.addEventListener("mousemove", function(e) {
+	var brushPos = getBrushPos(e.clientX, e.clientY);
+  var leftBut = detectLeftButton(e);
+  if (leftBut == 1) {
+		drawDot(brushPos.x, brushPos.y);
+  }
+}, false);
+
+bridge.addEventListener("touchmove", function(e) {
+    e.preventDefault();
+    var touch = e.targetTouches[0];
+    if (touch) {
+    var brushPos = getBrushPos(touch.pageX, touch.pageY);
+        drawDot(brushPos.x, brushPos.y);
+    }
+}, false);
