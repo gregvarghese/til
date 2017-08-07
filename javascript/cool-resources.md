@@ -13,3 +13,6 @@
 ## Tron Dashboard/Globe
 https://github.com/arscan/encom-boardroom
 https://github.com/arscan/encom-globe
+
+## Detect Chrome Headless
+http://antoinevastel.github.io/bot%20detection/2017/08/05/detect-chrome-headless.html
